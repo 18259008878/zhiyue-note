@@ -57,6 +57,8 @@ function saveNote(): void {
     if (title.value && content.value) {
         window.api.writeNote(title.value.trim(), content.value.trim());
         freshNoteStore.setNeedFresh();
+    } else {
+        alert('标题和内容不能为空');
     }
 }
 

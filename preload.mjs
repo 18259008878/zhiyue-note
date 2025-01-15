@@ -6,5 +6,8 @@ contextBridge.exposeInMainWorld("api", {
     },
     getNotes: () => {
         return ipcRenderer.invoke("get-notes");
+    },
+    moveToRecycle: (title, content) => {
+        ipcRenderer.send("move-to-recycle", { title, content });
     }
 })

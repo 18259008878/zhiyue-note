@@ -10,10 +10,15 @@ const __dirname = dirname(__filename);
 const userDataPath = app.getPath('userData');
 
 const notesDir = path.join(userDataPath, 'notes');
+const recycleDir = path.join(userDataPath, 'notes/$recycle');
 const isDev = !app.isPackaged;
 
-if (!fs.existsSync(notesDir)) {
-    fs.mkdirSync(notesDir, { recursive: true });
+// if (!fs.existsSync(notesDir)) {
+//     fs.mkdirSync(notesDir, { recursive: true });
+// }
+
+if (!fs.existsSync(recycleDir)) {
+    fs.mkdirSync(recycleDir, { recursive: true });
 }
 
 function createWindow() {
@@ -46,14 +51,23 @@ ipcMain.on("write-note", (_, args) => {
 });
 
 ipcMain.handle("get-notes", () => {
-    return fs.readdirSync(notesDir).map((file) => {
+    return fs.readdirSync(notesDir).filter((file) => {
+        const filePath = path.join(notesDir, file);
+        return fs.statSync(filePath).isFile() && path.extname(filePath) === '.md';
+    }).map((file) => {
         const filePath = path.join(notesDir, file)
         const content = fs.readFileSync(filePath, 'utf8');
         const stat = fs.statSync(filePath);
         const creationTime = stat.ctime.getTime().toString();
+        // TODO: how to deal with id??
         return { id: creationTime, title: file.replace('.md', ''), content };
     });
 });
+
+ipcMain.on("move-to-recycle", (_, args) => {
+    const { title, content } = args;
+    fs.renameSync(path.join(notesDir, `${title}.md`), path.join(recycleDir, `${title}.md`));
+})
 
 app.whenReady().then(() => {
     createWindow();

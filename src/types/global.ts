@@ -5,6 +5,7 @@ declare global {
         api: {
             getNotes: () => Promise<Note[]>;
             writeNote: (title: string, content: string) => void;
+            moveToRecycle: (title: string, content: string) => void;
         };
     }
 }
