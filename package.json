@@ -1,0 +1,61 @@
+{
+  "name": "zhiyue-note",
+  "author": {
+    "name": "Carmen",
+    "email": "qtycc@outlook.com"
+  },
+  "description": "一个基于Electron和Vue3的markdown简单笔记应用",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "start": "concurrently -k \"npm run dev\" \"npm run electron\"",
+    "electron:start": "electron .",
+    "electron:build": "electron-builder"
+  },
+  "build": {
+    "productName": "zhiyue-note",
+    "copyright": "Copyright(qtycc) © 2023",
+    "directories": {
+      "output": "out"
+    },
+    "win": {
+      "icon": "public/favicon.ico",
+      "target": [
+        {
+          "target": "nsis"
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "知月笔记"
+    }
+  },
+  "dependencies": {
+    "concurrently": "^9.1.2",
+    "highlight.js": "^11.11.1",
+    "marked": "^15.0.6",
+    "pinia": "^2.3.0",
+    "vite-plugin-oh-my-live2d": "^0.19.3",
+    "vue": "^3.5.13",
+    "zhiyue-note": "file:"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/tsconfig": "^0.7.0",
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.5",
+    "vue-tsc": "^2.2.0"
+  }
+}

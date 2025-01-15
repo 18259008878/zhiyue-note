@@ -1,0 +1,52 @@
+:root, :host {
+  --bg: hsl(219, 30%, 88%);
+  --color: hsl(219 30% 20%);
+  --selected-color: hsl(216, 59%, 78%);
+  --pre-bg: hsl(215, 17%, 81%);
+}
+
+[theme = "dark"] {
+  --bg: hsl(219, 30%, 12%);
+  --color: hsl(219 30% 98%);
+  --selected-color: hsl(216, 42%, 42%);
+  --pre-bg: hsl(227, 13%, 58%);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background-color: #888;
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 3px;
+  background-color: transparent;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg);
+  color: var(--color);
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  transition: background-color 1s cubic-bezier(0.075, 0.82, 0.165, 1), color 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+  height: 100vh;
+}
+
+img {
+  max-width: 100% !important;
+  height: auto;
+}
+
+#app {
+  margin: 0 auto;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
