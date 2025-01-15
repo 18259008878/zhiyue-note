@@ -13,9 +13,9 @@
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
-    "start": "concurrently -k \"npm run dev\" \"npm run electron\"",
     "electron:start": "electron .",
-    "electron:build": "electron-builder"
+    "electron:build": "electron-builder",
+    "start": "concurrently -k \"npm run dev\" \"npm run electron:start\""
   },
   "build": {
     "productName": "zhiyue-note",
@@ -41,7 +41,6 @@
     }
   },
   "dependencies": {
-    "concurrently": "^9.1.2",
     "highlight.js": "^11.11.1",
     "marked": "^15.0.6",
     "pinia": "^2.3.0",
@@ -52,6 +51,7 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/tsconfig": "^0.7.0",
+    "concurrently": "^9.1.2",
     "electron": "^34.0.0",
     "electron-builder": "^25.1.8",
     "typescript": "~5.6.2",
