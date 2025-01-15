@@ -34,7 +34,7 @@ watch(() => freshNoteStore.needFresh, async (needFresh) => {
     padding: 3rem 3rem;
     height: 100%;
     margin-top: 18vh;
-    width: 28%;
+    width: 20%;
 }
 
 #notes-list li {

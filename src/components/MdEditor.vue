@@ -93,7 +93,7 @@ watch(content, (newContent) => {
 /** for editor wrapper */
 #editor—wrapper {
     /* margin: 0 auto; */
-    width: 70%;
+    width: 78%;
     padding: 0 20px;
     position: relative;
     height: 100%;
