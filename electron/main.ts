@@ -90,7 +90,6 @@ function getNotes(dir: string): NoteListNode[] {
                 type: 'file',
                 name: item.name.replace('.md', ''),
                 content: {
-                    id: fullPath,
                     title: item.name.replace('.md', ''),
                     content: fs.readFileSync(fullPath, 'utf8'),
                     categoryName: categoryName,

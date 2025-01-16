@@ -1,12 +1,15 @@
 import { defineStore } from 'pinia';
-import type { Note } from '../types/note'
+import type { Note, NoteListNode } from '../types'
 
 export const useNoteStore = defineStore('noteStore', {
     state: () => ({
         currentNote: null as Note | null,
-        needFresh: false,
+        noteList: [] as NoteListNode[],
     }),
     actions: {
+        async fetchNoteList() {
+            this.noteList = await window.api.getNotes();
+        },
         /**
          *
          * @default null
@@ -16,23 +19,14 @@ export const useNoteStore = defineStore('noteStore', {
         setCurrentNote(note: Note | null = null) {
             this.currentNote = note;
         },
-        /**
-         *
-         * @default true
-         * @description 设置是否需要刷新
-         * @param needFresh 是否需要刷新
-         */
-        setNeedFresh(needFresh: boolean = true) {
-            this.needFresh = needFresh;
-        },
 
         /**
          *
          * @description 初始化
          */
         init() {
-            this.setNeedFresh();
             this.setCurrentNote();
+            this.fetchNoteList();
         }
     }
 });

@@ -55,7 +55,7 @@ renderer.code = ({ text, lang }) => {
 function saveNote(): void {
     if (title.value && content.value) {
         window.api.writeNote(title.value.trim(), content.value.trim());
-        noteStore.setNeedFresh();
+        noteStore.fetchNoteList();
     } else {
         alert('标题和内容不能为空');
     }

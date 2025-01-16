@@ -17,14 +17,14 @@ function deleteNote(noteListNode: NoteListNode): void {
     if (noteListNode.content!.categoryName === '回收站' && confirm('确定要彻底删除吗？')) {
         window.api.deleteNote(JSON.stringify(noteListNode.content));
         console.log(noteStore.currentNote, noteListNode.content);
-        if (noteStore.currentNote?.id === noteListNode.content?.id) {
+        if (noteStore.currentNote?.title === noteListNode.content?.title) {
             noteStore.setCurrentNote();
         }
-        noteStore.setNeedFresh();
+        noteStore.fetchNoteList();
         return;
     }
     window.api.moveToRecycle(JSON.stringify(noteListNode));
-    noteStore.setNeedFresh();
+    noteStore.fetchNoteList();
 }
 
 </script>
