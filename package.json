@@ -8,14 +8,11 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "main": "main.js",
+  "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build",
-    "preview": "vite preview",
-    "electron:start": "electron .",
-    "electron:build": "electron-builder",
-    "start": "concurrently -k \"npm run dev\" \"npm run electron:start\""
+    "build": "vue-tsc && vite build && electron-builder",
+    "preview": "vite preview"
   },
   "build": {
     "productName": "zhiyue-note",
@@ -51,11 +48,12 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/tsconfig": "^0.7.0",
-    "concurrently": "^9.1.2",
     "electron": "^34.0.0",
     "electron-builder": "^25.1.8",
     "typescript": "~5.6.2",
     "vite": "^6.0.5",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.6",
     "vue-tsc": "^2.2.0"
   }
 }

@@ -1,25 +1,28 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { useCurrentNoteStore, useFreshNoteStore } from '../stores';
-import type { Note } from '../types/note';
+import { useFreshNoteStore } from '../stores';
+import type { NoteListNode } from '../types/note';
 
-const notes = ref<Note[]>([]);
-const currentNoteStore = useCurrentNoteStore();
+const notes = ref<NoteListNode[]>([]);
+// const currentNoteStore = useCurrentNoteStore();
 const freshNoteStore = useFreshNoteStore();
 
-function handleOpenNote(note: Note): void {
-    currentNoteStore.setCurrentNote(note);
-}
+// function handleOpenNote(note: Note): void {
+//     currentNoteStore.setCurrentNote(note);
+// }
 
-function moveToRecycle(note: Note): void {
-    window.api.moveToRecycle(note.title, note.content);
-    freshNoteStore.setNeedFresh();
-}
+// function moveToRecycle(note: Note): void {
+//     window.api.moveToRecycle(note.title, note.content);
+//     freshNoteStore.setNeedFresh();
+// }
 
 watch(() => freshNoteStore.needFresh, async (needFresh) => {
     if (needFresh) {
         const data = await window.api.getNotes();
-        notes.value = data as Note[];
+        notes.value = data;
+        for (let i = 0; i < notes.value.length; i++) {
+            console.log(notes.value[i]);
+        }
         freshNoteStore.resetNeedFresh();
     }
 }, { immediate: true });
@@ -28,14 +31,14 @@ watch(() => freshNoteStore.needFresh, async (needFresh) => {
 
 <template>
     <ul id="notes-list" ref="notesList">
-        <li v-for="note in notes" :key="note.id">
+        <!-- <li v-for="note in notes" :key="note.id">
             <div class="note-title" @click="handleOpenNote(note)" :class="{ active: note.id == currentNoteStore.currentNote?.id }">
-                {{ note.title }}
+                {{ note.title }}-{{ note.categoryName }}
             </div>
             <button class="delete-btn" @click="moveToRecycle(note)">
                 <i class="fa-solid fa-trash-can"></i>
             </button>
-        </li>
+        </li> -->
     </ul>
 </template>
 
