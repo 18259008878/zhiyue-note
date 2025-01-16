@@ -1,5 +1,5 @@
 export interface Note {
-    id: string;
+    id: string; // TODO: how to save id?
     title: string;
     content: string;
     categoryName?: string;

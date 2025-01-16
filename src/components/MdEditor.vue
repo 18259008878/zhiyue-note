@@ -1,46 +1,45 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import type { Note } from '../types/note';
-import { useCurrentNoteStore, useFreshNoteStore } from '../stores';
+import type { Note } from '../types';
+import { useNoteStore } from '../stores';
 import { marked } from 'marked'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css';
 
-const currentNoteStore = useCurrentNoteStore();
-const freshNoteStore = useFreshNoteStore();
+const noteStore = useNoteStore();
 const content = computed({
     get() {
-        return currentNoteStore.currentNote?.content || '';
+        return noteStore.currentNote?.content || '';
     },
     set(newContent) {
-        let currentNote = currentNoteStore.currentNote;
+        let currentNote = noteStore.currentNote;
         if (currentNote) {
             currentNote.content = newContent;
-            currentNoteStore.setCurrentNote(currentNote);
+            noteStore.setCurrentNote(currentNote);
         } else {
             let newNote: Partial<Note> = {
                 title: "",
                 content: newContent
             };
-            currentNoteStore.setCurrentNote(newNote as Note);
+            noteStore.setCurrentNote(newNote as Note);
         }
     }
 });
 const title = computed({
     get() {
-        return currentNoteStore.currentNote?.title || '';
+        return noteStore.currentNote?.title || '';
     },
     set(newTitle) {
-        let currentNote = currentNoteStore.currentNote;
+        let currentNote = noteStore.currentNote;
         if (currentNote) {
             currentNote.title = newTitle;
-            currentNoteStore.setCurrentNote(currentNote);
+            noteStore.setCurrentNote(currentNote);
         } else {
             let newNote: Partial<Note> = {
                 title: newTitle,
                 content: ""
             };
-            currentNoteStore.setCurrentNote(newNote as Note);
+            noteStore.setCurrentNote(newNote as Note);
         }
     }
 });
@@ -56,14 +55,14 @@ renderer.code = ({ text, lang }) => {
 function saveNote(): void {
     if (title.value && content.value) {
         window.api.writeNote(title.value.trim(), content.value.trim());
-        freshNoteStore.setNeedFresh();
+        noteStore.setNeedFresh();
     } else {
         alert('标题和内容不能为空');
     }
 }
 
 function createNote(): void {
-    currentNoteStore.clearCurrentNote();
+    noteStore.setCurrentNote();
 }
 
 watch(content, (newContent) => {

@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import path from "node:path";
 import fs from "fs";
-import type { NoteListNode } from "../src/types/note";
+import type { NoteListNode, Note } from "../src/types";
 
 // get __dirname because origin __dirname is undefined in ES6 modules
 const __filename = fileURLToPath(import.meta.url);
@@ -64,33 +64,47 @@ ipcMain.on("write-note", (_, args) => {
     fs.writeFileSync(path.join(notesDir, `${title}.md`), content, 'utf8');
 });
 
-ipcMain.on("move-to-recycle", (_, args) => {
-    const { title } = args;
-    fs.renameSync(path.join(notesDir, `${title}.md`), path.join(recycleDir, `${title}.md`));
+ipcMain.on("move-to-recycle", (_, noteListNodeJson: string) => {
+    const noteListNode = JSON.parse(noteListNodeJson) as NoteListNode;
+    fs.renameSync(path.join(notesDir, `${noteListNode.content!.categoryName}`, `${noteListNode.content!.title}.md`), path.join(recycleDir, `${noteListNode.content!.title}.md`));
+});
+
+ipcMain.on("delete-note", (_, noteJson: string) => {
+    const note = JSON.parse(noteJson) as Note;
+    fs.rmSync(path.join(recycleDir, `${note.title}.md`));
 });
 
 function getNotes(dir: string): NoteListNode[] {
     const items = fs.readdirSync(dir, { withFileTypes: true });
+    items.sort((a, b) => {
+        if (a.isDirectory() && !b.isDirectory()) return -1;
+        if (!a.isDirectory() && b.isDirectory()) return 1;
+        return a.name.localeCompare(b.name);
+    });
     return items.map(item => {
         const fullPath = path.join(dir, item.name);
         if (item.isFile() && path.extname(fullPath) === '.md') {
+            let categoryName = path.dirname(fullPath).replace(notesDir, '') .replace(/\\/g, '/').replace(/^\//, '');
+            categoryName = categoryName === "$recycle" ? "回收站" : categoryName;
             return {
                 type: 'file',
                 name: item.name.replace('.md', ''),
                 content: {
-                    id: fs.statSync(fullPath).ctime.getTime().toString(),
+                    id: fullPath,
                     title: item.name.replace('.md', ''),
                     content: fs.readFileSync(fullPath, 'utf8'),
+                    categoryName: categoryName,
                 },
             }
         } else {
+            const name = item.name == "$recycle" ? "回收站" : item.name;
             return {
                 type: 'directory',
-                name: item.name,
+                name: name,
                 children: getNotes(fullPath),
             }
         }
-    })
+    });
 }
 
 app.whenReady().then(() => {

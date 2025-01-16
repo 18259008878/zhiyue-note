@@ -1,7 +1,6 @@
 import { createPinia } from "pinia";
 
-import { useCurrentNoteStore } from "./currentNote";
-import { useFreshNoteStore } from "./freshNote";
+import { useNoteStore } from "./noteStore";
 
 
 const pinia = createPinia();
@@ -9,6 +8,5 @@ const pinia = createPinia();
 export default pinia;
 
 export {
-    useCurrentNoteStore,
-    useFreshNoteStore,
+    useNoteStore,
 }

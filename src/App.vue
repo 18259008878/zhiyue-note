@@ -2,14 +2,12 @@
 import HeadPart from './components/HeadPart.vue';
 import AsideList from './components/AsideList.vue';
 import MdEditor from './components/MdEditor.vue';
-import { useCurrentNoteStore, useFreshNoteStore } from './stores';
+import { useNoteStore } from './stores';
 import { onMounted } from 'vue';
 
 onMounted(() => {
-  const currentNoteStore = useCurrentNoteStore();
-  const freshNoteStore = useFreshNoteStore();
-  currentNoteStore.clearCurrentNote();
-  freshNoteStore.setNeedFresh();
+  const noteStore = useNoteStore();
+  noteStore.init();
 });
 </script>
 
