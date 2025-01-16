@@ -1,4 +1,4 @@
-export { Note, NoteListNode } from './note';
+export { Note, NoteListNode, NoteMeta } from './note';
 import { IApi } from './electronAPI';
 
 declare global {

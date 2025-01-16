@@ -10,6 +10,9 @@ contextBridge.exposeInMainWorld("api", {
     moveToRecycle: (noteListNodeJson: string) => {
         ipcRenderer.send("move-to-recycle", noteListNodeJson);
     },
+    recycleNote: (noteJson: string) => {
+        ipcRenderer.send("recycle-note", noteJson);
+    },
     deleteNote: (noteJson: string) => {
         ipcRenderer.send("delete-note", noteJson);
     }

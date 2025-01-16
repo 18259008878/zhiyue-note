@@ -12,6 +12,11 @@ function handleOpenNote(note: Note): void {
     noteStore.setCurrentNote(note);
 }
 
+function recycleNote(note: Note): void {
+    window.api.recycleNote(JSON.stringify(note));
+    noteStore.fetchNoteList();
+}
+
 function deleteNote(noteListNode: NoteListNode): void {
     if (noteListNode.type === 'directory') return;
     if (noteListNode.content!.categoryName === '回收站' && confirm('确定要彻底删除吗？')) {
@@ -45,7 +50,10 @@ function deleteNote(noteListNode: NoteListNode): void {
                 <div class="title-container">
                     <span class="icon">📄</span>
                     <strong @click="handleOpenNote(item.content!)">{{ item.name }}</strong>
-                    <button class="delete-btn" @click="deleteNote(item)">
+                    <button v-if="item.content!.categoryName === '回收站'" class="operation-btn" id="recycle-btn" @click="recycleNote(item.content!)">
+                        <i class="fa-solid fa-trash-arrow-up"></i>
+                    </button>
+                    <button class="operation-btn" id="delete-btn" @click="deleteNote(item)">
                         <i class="fa-regular fa-trash-can"></i>
                     </button>
                 </div>
@@ -90,17 +98,29 @@ function deleteNote(noteListNode: NoteListNode): void {
     background-color: var(--selected-color);
 }
 
-.delete-btn {
+.operation-btn {
     width: 30px;
     height: 30px;
     border: none;
+    margin: 2px 2px;
     border-radius: 50%;
-    background-color: #be656d;
     color: var(--color);
     cursor: pointer;
 }
 
-.delete-btn:hover {
+#recycle-btn {
+    background-color: #82af9c;
+}
+
+#recycle-btn:hover {
+    background-color: #3e705a;
+}
+
+#delete-btn {
+    background-color: #be656d;
+}
+
+#delete-btn:hover {
     background-color: #d42332;
 }
 </style>

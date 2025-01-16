@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import path from "node:path";
 import fs from "fs";
-import type { NoteListNode, Note } from "../src/types";
+import type { NoteListNode, Note, NoteMeta } from "../src/types";
 
 // get __dirname because origin __dirname is undefined in ES6 modules
 const __filename = fileURLToPath(import.meta.url);
@@ -66,12 +66,25 @@ ipcMain.on("write-note", (_, args) => {
 
 ipcMain.on("move-to-recycle", (_, noteListNodeJson: string) => {
     const noteListNode = JSON.parse(noteListNodeJson) as NoteListNode;
+    const noteMeta: NoteMeta = {
+        title: noteListNode.content!.title,
+        fullPath: path.join(notesDir, `${noteListNode.content!.categoryName}`, `${noteListNode.content!.title}.md`),
+    };
+    fs.writeFileSync(path.join(recycleDir, `$recycle-meta-${noteListNode.content!.title}.json`), JSON.stringify(noteMeta), 'utf8');
     fs.renameSync(path.join(notesDir, `${noteListNode.content!.categoryName}`, `${noteListNode.content!.title}.md`), path.join(recycleDir, `${noteListNode.content!.title}.md`));
+});
+
+ipcMain.on("recycle-note", (_, noteJson: string) => {
+    const note = JSON.parse(noteJson) as Note;
+    const noteMeta: NoteMeta = JSON.parse(fs.readFileSync(path.join(recycleDir, `$recycle-meta-${note.title}.json`), 'utf8')) as NoteMeta;
+    fs.renameSync(path.join(recycleDir, `${note.title}.md`), noteMeta.fullPath);
+    fs.rmSync(path.join(recycleDir, `$recycle-meta-${note.title}.json`));
 });
 
 ipcMain.on("delete-note", (_, noteJson: string) => {
     const note = JSON.parse(noteJson) as Note;
     fs.rmSync(path.join(recycleDir, `${note.title}.md`));
+    fs.rmSync(path.join(recycleDir, `$recycle-meta-${note.title}.json`));
 });
 
 function getNotes(dir: string): NoteListNode[] {
@@ -81,7 +94,7 @@ function getNotes(dir: string): NoteListNode[] {
         if (!a.isDirectory() && b.isDirectory()) return 1;
         return a.name.localeCompare(b.name);
     });
-    return items.map(item => {
+    let result: NoteListNode[] = items.map(item => {
         const fullPath = path.join(dir, item.name);
         if (item.isFile() && path.extname(fullPath) === '.md') {
             let categoryName = path.dirname(fullPath).replace(notesDir, '') .replace(/\\/g, '/').replace(/^\//, '');
@@ -95,15 +108,22 @@ function getNotes(dir: string): NoteListNode[] {
                     categoryName: categoryName,
                 },
             }
-        } else {
+        } else if (item.isDirectory()) {
             const name = item.name == "$recycle" ? "回收站" : item.name;
             return {
                 type: 'directory',
                 name: name,
                 children: getNotes(fullPath),
             }
+        } else {
+            return {
+                type: 'file',
+                name: "unknown",
+            }
         }
     });
+    result = result.filter(item => item.name !== "unknown")
+    return result;
 }
 
 app.whenReady().then(() => {

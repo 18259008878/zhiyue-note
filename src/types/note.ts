@@ -10,3 +10,8 @@ export interface NoteListNode {
     content?: Note;
     children?: NoteListNode[];
 }
+
+export interface NoteMeta {
+    title: string;
+    fullPath: string;
+}
