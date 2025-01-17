@@ -1,9 +1,9 @@
-import type { NoteListNode } from "./note"
+import type { FileNode } from "./note"
 
 export interface IApi {
-    getNotes: () => Promise<NoteListNode[]>,
-    writeNote: (title: string, content: string) => void,
-    moveToRecycle: (noteListNodeJson: string) => void,
-    recycleNote: (noteJson: string) => void,
-    deleteNote: (noteJson: string) => void,
+    getNotes: () => Promise<FileNode[]>,
+    writeNote: (fileNodeJson: string) => void,
+    moveToRecycle: (fileNodeJson: string) => void,
+    recycleNote: (fileNodeJson: string) => void,
+    deleteNote: (fileNodeJson: string) => void,
 }

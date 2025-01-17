@@ -1,19 +1,19 @@
 import { contextBridge, ipcRenderer } from "electron";
 
 contextBridge.exposeInMainWorld("api", {
-    writeNote: (title: string, content: string) => {
-        ipcRenderer.send("write-note", { title, content });
+    writeNote: (fileNodeJson: string) => {
+        ipcRenderer.send("write-note", fileNodeJson);
     },
     getNotes: () => {
         return ipcRenderer.invoke("get-notes");
     },
-    moveToRecycle: (noteListNodeJson: string) => {
-        ipcRenderer.send("move-to-recycle", noteListNodeJson);
+    moveToRecycle: (fileNodeJson: string) => {
+        ipcRenderer.send("move-to-recycle", fileNodeJson);
     },
-    recycleNote: (noteJson: string) => {
-        ipcRenderer.send("recycle-note", noteJson);
+    recycleNote: (fileNodeJson: string) => {
+        ipcRenderer.send("recycle-note", fileNodeJson);
     },
-    deleteNote: (noteJson: string) => {
-        ipcRenderer.send("delete-note", noteJson);
+    deleteNote: (fileNodeJson: string) => {
+        ipcRenderer.send("delete-note", fileNodeJson);
     }
 })

@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import path from "node:path";
 import fs from "fs";
-import type { NoteListNode, Note, NoteMeta } from "../src/types";
+import type { FileNode } from "../src/types";
 
 // get __dirname because origin __dirname is undefined in ES6 modules
 const __filename = fileURLToPath(import.meta.url);
@@ -59,70 +59,72 @@ function createWindow() {
 
 ipcMain.handle("get-notes", () => getNotes(notesDir));
 
-ipcMain.on("write-note", (_, args) => {
-    const { title, content } = args;
-    fs.writeFileSync(path.join(notesDir, `${title}.md`), content, 'utf8');
+ipcMain.on("write-note", (_, fileNodeJson: string) => {
+    const fileNode = JSON.parse(fileNodeJson) as FileNode;
+    console.log(fileNode.fullPath);
+    const filePath = fileNode.fullPath ?? path.join(notesDir, `${fileNode.nodeName}.md`);
+    fs.writeFileSync(filePath, fileNode.content!, 'utf8');
 });
 
-ipcMain.on("move-to-recycle", (_, noteListNodeJson: string) => {
-    const noteListNode = JSON.parse(noteListNodeJson) as NoteListNode;
-    const noteMeta: NoteMeta = {
-        title: noteListNode.content!.title,
-        fullPath: path.join(notesDir, `${noteListNode.content!.categoryName}`, `${noteListNode.content!.title}.md`),
+ipcMain.on("move-to-recycle", (_, fileNodeJson: string) => {
+    const fileNode = JSON.parse(fileNodeJson) as FileNode;
+    const fileNodeMeta: Pick<FileNode, "nodeName" | "fullPath"> = {
+        nodeName: fileNode.nodeName,
+        fullPath: fileNode.fullPath,
     };
-    fs.writeFileSync(path.join(recycleDir, `$recycle-meta-${noteListNode.content!.title}.json`), JSON.stringify(noteMeta), 'utf8');
-    fs.renameSync(path.join(notesDir, `${noteListNode.content!.categoryName}`, `${noteListNode.content!.title}.md`), path.join(recycleDir, `${noteListNode.content!.title}.md`));
+    fs.writeFileSync(path.join(recycleDir, `$recycle-meta-${fileNode.nodeName}.json`), JSON.stringify(fileNodeMeta), 'utf8');
+    fs.renameSync(fileNode.fullPath, path.join(recycleDir, `${fileNode.nodeName}.md`));
 });
 
-ipcMain.on("recycle-note", (_, noteJson: string) => {
-    const note = JSON.parse(noteJson) as Note;
-    const noteMeta: NoteMeta = JSON.parse(fs.readFileSync(path.join(recycleDir, `$recycle-meta-${note.title}.json`), 'utf8')) as NoteMeta;
-    fs.renameSync(path.join(recycleDir, `${note.title}.md`), noteMeta.fullPath);
-    fs.rmSync(path.join(recycleDir, `$recycle-meta-${note.title}.json`));
+ipcMain.on("recycle-note", (_, fileNodeJson: string) => {
+    const fileNode = JSON.parse(fileNodeJson) as FileNode;
+    const fileNodeMeta: Pick<FileNode, "nodeName" | "fullPath"> = JSON.parse(fs.readFileSync(path.join(recycleDir, `$recycle-meta-${fileNode.nodeName}.json`), 'utf8'));
+    fs.renameSync(fileNode.fullPath, fileNodeMeta.fullPath);
+    fs.rmSync(path.join(recycleDir, `$recycle-meta-${fileNode.nodeName}.json`));
 });
 
-ipcMain.on("delete-note", (_, noteJson: string) => {
-    const note = JSON.parse(noteJson) as Note;
-    fs.rmSync(path.join(recycleDir, `${note.title}.md`));
-    fs.rmSync(path.join(recycleDir, `$recycle-meta-${note.title}.json`));
-});
+ipcMain.on("delete-note", (_, fileNodeJson: string) => {
+    const fileNode = JSON.parse(fileNodeJson) as FileNode;
+    fs.rmSync(fileNode.fullPath);
+    fs.rmSync(path.join(recycleDir, `$recycle-meta-${fileNode.nodeName}.json`));
+})
 
-function getNotes(dir: string): NoteListNode[] {
+function getNotes(dir: string): FileNode[] {
     const items = fs.readdirSync(dir, { withFileTypes: true });
     items.sort((a, b) => {
         if (a.isDirectory() && !b.isDirectory()) return -1;
         if (!a.isDirectory() && b.isDirectory()) return 1;
         return a.name.localeCompare(b.name);
     });
-    let result: NoteListNode[] = items.map(item => {
+    let result: FileNode[] = items.map(item => {
         const fullPath = path.join(dir, item.name);
         if (item.isFile() && path.extname(fullPath) === '.md') {
-            let categoryName = path.dirname(fullPath).replace(notesDir, '') .replace(/\\/g, '/').replace(/^\//, '');
-            categoryName = categoryName === "$recycle" ? "回收站" : categoryName;
+            let relativePath = path.dirname(fullPath).replace(notesDir, '') .replace(/\\/g, '/').replace(/^\//, '');
+            relativePath = relativePath === "$recycle" ? "回收站" : relativePath;
             return {
                 type: 'file',
-                name: item.name.replace('.md', ''),
-                content: {
-                    title: item.name.replace('.md', ''),
-                    content: fs.readFileSync(fullPath, 'utf8'),
-                    categoryName: categoryName,
-                },
+                nodeName: item.name.replace('.md', ''),
+                relativePath: relativePath,
+                fullPath: fullPath,
+                content: fs.readFileSync(fullPath, 'utf8'),
             }
         } else if (item.isDirectory()) {
             const name = item.name == "$recycle" ? "回收站" : item.name;
             return {
                 type: 'directory',
-                name: name,
+                nodeName: name,
+                fullPath: fullPath,
                 children: getNotes(fullPath),
             }
         } else {
             return {
                 type: 'file',
-                name: "unknown",
+                nodeName: "unknown",
+                fullPath: fullPath,
             }
         }
     });
-    result = result.filter(item => item.name !== "unknown")
+    result = result.filter(item => item.nodeName !== "unknown");
     return result;
 }
 

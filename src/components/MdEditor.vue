@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import type { Note } from '../types';
+import type { FileNode } from '../types';
 import { useNoteStore } from '../stores';
 import { marked } from 'marked'
 import hljs from 'highlight.js'
@@ -17,29 +17,31 @@ const content = computed({
             currentNote.content = newContent;
             noteStore.setCurrentNote(currentNote);
         } else {
-            let newNote: Partial<Note> = {
-                title: "",
+            let newNote: Pick<FileNode, "type" | "nodeName" | "content"> = {
+                type: "file",
+                nodeName: "",
                 content: newContent
             };
-            noteStore.setCurrentNote(newNote as Note);
+            noteStore.setCurrentNote(newNote as FileNode);
         }
     }
 });
 const title = computed({
     get() {
-        return noteStore.currentNote?.title || '';
+        return noteStore.currentNote?.nodeName || '';
     },
     set(newTitle) {
         let currentNote = noteStore.currentNote;
         if (currentNote) {
-            currentNote.title = newTitle;
+            currentNote.nodeName = newTitle;
             noteStore.setCurrentNote(currentNote);
         } else {
-            let newNote: Partial<Note> = {
-                title: newTitle,
+            let newNote: Pick<FileNode, "type" | "nodeName" | "content"> = {
+                type: "file",
+                nodeName: newTitle,
                 content: ""
             };
-            noteStore.setCurrentNote(newNote as Note);
+            noteStore.setCurrentNote(newNote as FileNode);
         }
     }
 });
@@ -54,7 +56,8 @@ renderer.code = ({ text, lang }) => {
 
 function saveNote(): void {
     if (title.value && content.value) {
-        window.api.writeNote(title.value.trim(), content.value.trim());
+        console.log(noteStore.currentNote);
+        window.api.writeNote(JSON.stringify(noteStore.currentNote));
         noteStore.fetchNoteList();
     } else {
         alert('标题和内容不能为空');
@@ -180,6 +183,7 @@ watch(content, (newContent) => {
 }
 
 :deep(.hljs) {
+    font-family: 'consolas', '微软雅黑', 'sans-serif';
     border-radius: 5px;
     background-color: var(--pre-bg) !important;
     color: var(--color) !important;

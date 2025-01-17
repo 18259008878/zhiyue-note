@@ -1,34 +1,34 @@
 <script setup lang="ts">
 import { useNoteStore } from '../stores';
-import type { Note, NoteListNode } from '../types';
+import type { FileNode } from '../types';
 
 defineProps<{
-    items: NoteListNode[]
+    items: FileNode[]
 }>();
 
 const noteStore = useNoteStore();
 
-function handleOpenNote(note: Note): void {
+function handleOpenNote(note: FileNode): void {
     noteStore.setCurrentNote(note);
 }
 
-function recycleNote(note: Note): void {
+function recycleNote(note: FileNode): void {
     window.api.recycleNote(JSON.stringify(note));
     noteStore.fetchNoteList();
 }
 
-function deleteNote(noteListNode: NoteListNode): void {
-    if (noteListNode.type === 'directory') return;
-    if (noteListNode.content!.categoryName === '回收站' && confirm('确定要彻底删除吗？')) {
-        window.api.deleteNote(JSON.stringify(noteListNode.content));
-        console.log(noteStore.currentNote, noteListNode.content);
-        if (noteStore.currentNote?.title === noteListNode.content?.title) {
+function deleteNote(note: FileNode): void {
+    if (note.type === 'directory') return;
+    if (note.relativePath === '回收站' && confirm('确定要彻底删除吗？')) {
+        window.api.deleteNote(JSON.stringify(note));
+        console.log(noteStore.currentNote, note.content);
+        if (noteStore.currentNote?.nodeName === note.nodeName) {
             noteStore.setCurrentNote();
         }
         noteStore.fetchNoteList();
         return;
     }
-    window.api.moveToRecycle(JSON.stringify(noteListNode));
+    window.api.moveToRecycle(JSON.stringify(note));
     noteStore.fetchNoteList();
 }
 
@@ -40,7 +40,7 @@ function deleteNote(noteListNode: NoteListNode): void {
             <div v-if="item.type === 'directory'" class="directory">
                 <div class="title-container">
                     <span class="icon">📁</span>
-                    <strong>{{ item.name }}</strong>
+                    <strong>{{ item.nodeName }}</strong>
                 </div>
                 <div class="children">
                     <TreeView :items="item.children!" />
@@ -49,8 +49,8 @@ function deleteNote(noteListNode: NoteListNode): void {
             <div v-else class="file">
                 <div class="title-container">
                     <span class="icon">📄</span>
-                    <strong @click="handleOpenNote(item.content!)">{{ item.name }}</strong>
-                    <button v-if="item.content!.categoryName === '回收站'" class="operation-btn" id="recycle-btn" @click="recycleNote(item.content!)">
+                    <strong @click="handleOpenNote(item)">{{ item.nodeName }}</strong>
+                    <button v-if="item.relativePath === '回收站'" class="operation-btn" id="recycle-btn" @click="recycleNote(item)">
                         <i class="fa-solid fa-trash-arrow-up"></i>
                     </button>
                     <button class="operation-btn" id="delete-btn" @click="deleteNote(item)">

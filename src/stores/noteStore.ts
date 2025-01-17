@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
-import type { Note, NoteListNode } from '../types'
+import type { FileNode } from '../types'
 
 export const useNoteStore = defineStore('noteStore', {
     state: () => ({
-        currentNote: null as Note | null,
-        noteList: [] as NoteListNode[],
+        currentNote: null as FileNode | null,
+        noteList: [] as FileNode[],
     }),
     actions: {
         async fetchNoteList() {
@@ -16,7 +16,7 @@ export const useNoteStore = defineStore('noteStore', {
          * @description 设置编辑器展示的笔记
          * @param note 笔记
          */
-        setCurrentNote(note: Note | null = null) {
+        setCurrentNote(note: FileNode | null = null) {
             this.currentNote = note;
         },
 
