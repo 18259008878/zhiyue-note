@@ -30,6 +30,10 @@ function handleCreateNote(note: FileNode): void {
     noteStore.setCurrentNote(newNote);
 }
 
+function handleCreateDirectory(note: FileNode): void {
+
+}
+
 function recycleNote(note: FileNode): void {
     window.api.recycleNote(JSON.stringify(note));
     noteStore.fetchNoteList();
@@ -58,10 +62,20 @@ function deleteNote(note: FileNode): void {
                 <div class="title-container">
                     <span class="icon">📁</span>
                     <strong>{{ item.nodeName }}</strong>
-                    <button v-if="item.nodeName !== '回收站'" id="create-directory-btn" class="operation-btn">
+                    <button
+                        v-if="item.nodeName !== '回收站'"
+                        id="create-directory-btn"
+                        class="operation-btn"
+                        @click="handleCreateDirectory(item)"
+                    >
                         <i class="fa-solid fa-folder-plus"></i>
                     </button>
-                    <button v-if="item.nodeName !== '回收站'" id="create-file-btn" class="operation-btn" @click="handleCreateNote(item)">
+                    <button
+                        v-if="item.nodeName !== '回收站'"
+                        id="create-file-btn"
+                        class="operation-btn"
+                        @click="handleCreateNote(item)"
+                    >
                         <i class="fa-solid fa-plus"></i>
                     </button>
                 </div>
@@ -78,10 +92,19 @@ function deleteNote(note: FileNode): void {
                     >
                         {{ item.nodeName }}
                     </strong>
-                    <button v-if="item.relativePath === '回收站'" class="operation-btn" id="recycle-btn" @click="recycleNote(item)">
+                    <button
+                        v-if="item.relativePath === '回收站'"
+                        class="operation-btn"
+                        id="recycle-btn"
+                        @click="recycleNote(item)"
+                    >
                         <i class="fa-solid fa-trash-arrow-up"></i>
                     </button>
-                    <button class="operation-btn" id="delete-btn" @click="deleteNote(item)">
+                    <button
+                        class="operation-btn"
+                        id="delete-btn"
+                        @click="deleteNote(item)"
+                    >
                         <i class="fa-regular fa-trash-can"></i>
                     </button>
                 </div>

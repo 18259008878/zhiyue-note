@@ -47,7 +47,7 @@ function createNote(): void {
             </button>
         </div>
         <div id="editor-container">
-            <input type="text" ref="title-input" placeholder="标题" v-model="noteStore.title" />
+            <input type="text" placeholder="标题" v-model="noteStore.title" />
             <div id="edit-field">
                 <textarea id="editor" placeholder="在这里记录你的每一瞬" v-model="noteStore.content"></textarea>
                 <div id="preview-container" v-html="noteStore.markdown"></div>

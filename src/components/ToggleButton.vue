@@ -25,7 +25,11 @@ onMounted(() => {
 </script>
 
 <template>
-    <span class="toggle" ref="toggle-theme-btn" @click="toggleTheme"></span>
+    <span
+        class="toggle"
+        ref="toggle-theme-btn"
+        @click="toggleTheme"
+    ></span>
 </template>
 
 <style scoped>
