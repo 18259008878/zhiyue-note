@@ -1,76 +1,39 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
-import type { FileNode } from '../types';
 import { useNoteStore } from '../stores';
-import { marked } from 'marked'
-import hljs from 'highlight.js'
+import path from 'path-browserify-win32';
 import 'highlight.js/styles/github.css';
 
 const noteStore = useNoteStore();
-const content = computed({
-    get() {
-        return noteStore.currentNote?.content || '';
-    },
-    set(newContent) {
-        let currentNote = noteStore.currentNote;
-        if (currentNote) {
-            currentNote.content = newContent;
-            noteStore.setCurrentNote(currentNote);
-        } else {
-            let newNote: Pick<FileNode, "type" | "nodeName" | "content"> = {
-                type: "file",
-                nodeName: "",
-                content: newContent
-            };
-            noteStore.setCurrentNote(newNote as FileNode);
-        }
-    }
-});
-const title = computed({
-    get() {
-        return noteStore.currentNote?.nodeName || '';
-    },
-    set(newTitle) {
-        let currentNote = noteStore.currentNote;
-        if (currentNote) {
-            currentNote.nodeName = newTitle;
-            noteStore.setCurrentNote(currentNote);
-        } else {
-            let newNote: Pick<FileNode, "type" | "nodeName" | "content"> = {
-                type: "file",
-                nodeName: newTitle,
-                content: ""
-            };
-            noteStore.setCurrentNote(newNote as FileNode);
-        }
-    }
-});
-const markdown = ref<string>('');
-
-// markdown 渲染器
-const renderer = new marked.Renderer();
-renderer.code = ({ text, lang }) => {
-    const validLanguage = hljs.getLanguage(lang!) ? lang : 'plaintext';
-    return `<pre><code class="hljs ${validLanguage}">${hljs.highlight(text, { language: validLanguage!, ignoreIllegals: true }).value}</code></pre>`;
-};
 
 function saveNote(): void {
-    if (title.value && content.value) {
-        console.log(noteStore.currentNote);
-        window.api.writeNote(JSON.stringify(noteStore.currentNote));
-        noteStore.fetchNoteList();
-    } else {
-        alert('标题和内容不能为空');
+    console.log(noteStore.currentNote);
+    if (!noteStore.currentNote) return; // 如果没有当前笔记，则不执行保存操作
+    if (noteStore.title?.trim() === '') {
+        alert('请输入标题');
+        return;
     }
+    if (noteStore.currentNote.fullPath) { // 如果当前笔记有路径，则执行重命名操作
+        const oldNotePath = noteStore.currentNote.fullPath;
+        const isWindows = window.navigator.userAgent.indexOf('Windows') !== -1;
+        let fullPath: string;
+        if (isWindows) {
+            fullPath = path.win32.join(path.win32.dirname(oldNotePath), `${noteStore.title}.md`);
+        } else {
+            fullPath = path.join(path.dirname(oldNotePath), `${noteStore.title}.md`);
+        }
+        noteStore.currentNote.fullPath = fullPath;
+        window.api.renameNote(oldNotePath, noteStore.currentNote.fullPath);
+    }
+    window.api.writeNote(JSON.stringify(noteStore.currentNote));
+    noteStore.fetchNoteList();
 }
 
 function createNote(): void {
     noteStore.setCurrentNote();
 }
 
-watch(content, (newContent) => {
-    markdown.value = marked(newContent, { renderer }) as string;
-});
+//     markdown.value = marked(newContent, { renderer }) as string;
+// });
 </script>
 
 <template>
@@ -84,10 +47,10 @@ watch(content, (newContent) => {
             </button>
         </div>
         <div id="editor-container">
-            <input type="text" ref="title-input" placeholder="标题" v-model="title" />
+            <input type="text" ref="title-input" placeholder="标题" v-model="noteStore.title" />
             <div id="edit-field">
-                <textarea id="editor" placeholder="在这里记录你的每一瞬" v-model="content"></textarea>
-                <div id="preview-container" v-html="markdown"></div>
+                <textarea id="editor" placeholder="在这里记录你的每一瞬" v-model="noteStore.content"></textarea>
+                <div id="preview-container" v-html="noteStore.markdown"></div>
             </div>
         </div>
     </div>

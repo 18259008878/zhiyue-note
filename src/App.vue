@@ -7,8 +7,11 @@ import { watch } from 'vue';
 
 const noteStore = useNoteStore();
 noteStore.init();
-watch(() => noteStore.noteList, (newVal) => {
-  console.log(newVal);
+watch(() => noteStore.noteList, (newNoteList) => {
+  console.log({newNoteList});
+});
+watch(() => noteStore.currentNote, (newNote) => {
+  console.log({newNote});
 });
 </script>
 

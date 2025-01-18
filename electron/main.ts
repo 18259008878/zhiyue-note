@@ -4,6 +4,7 @@ import { dirname } from 'node:path';
 import path from "node:path";
 import fs from "fs";
 import type { FileNode } from "../src/types";
+import { existsSync } from "node:fs";
 
 // get __dirname because origin __dirname is undefined in ES6 modules
 const __filename = fileURLToPath(import.meta.url);
@@ -66,6 +67,15 @@ ipcMain.on("write-note", (_, fileNodeJson: string) => {
     fs.writeFileSync(filePath, fileNode.content!, 'utf8');
 });
 
+ipcMain.on("rename-note", (_, args: any) => {
+    const { oldPath, newPath } = args;
+    if (!existsSync(oldPath)) return; // 文件不存在
+    if (fs.statSync(oldPath).isDirectory()) return; // 不能重命名文件夹
+    if (oldPath && newPath) {
+        fs.renameSync(oldPath, newPath);
+    }
+});
+
 ipcMain.on("move-to-recycle", (_, fileNodeJson: string) => {
     const fileNode = JSON.parse(fileNodeJson) as FileNode;
     const fileNodeMeta: Pick<FileNode, "nodeName" | "fullPath"> = {
@@ -107,7 +117,7 @@ function getNotes(dir: string): FileNode[] {
                 relativePath: relativePath,
                 fullPath: fullPath,
                 content: fs.readFileSync(fullPath, 'utf8'),
-            }
+            } satisfies FileNode;
         } else if (item.isDirectory()) {
             const name = item.name == "$recycle" ? "回收站" : item.name;
             return {
@@ -115,13 +125,13 @@ function getNotes(dir: string): FileNode[] {
                 nodeName: name,
                 fullPath: fullPath,
                 children: getNotes(fullPath),
-            }
+            } satisfies FileNode;
         } else {
             return {
                 type: 'file',
                 nodeName: "unknown",
                 fullPath: fullPath,
-            }
+            } satisfies FileNode;
         }
     });
     result = result.filter(item => item.nodeName !== "unknown");

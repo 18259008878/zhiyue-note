@@ -28,3 +28,10 @@ export interface FileNode {
      */
     children?: FileNode[];
 }
+
+/**
+ * Note is a type of FileNode with only the necessary properties  
+ * include **required(type, nodeName, content)** and  
+ * **optional(fullPath, relativePath)**
+ */
+export type Note = Pick<FileNode, "type" | "nodeName" | "content"> & Partial<Pick<FileNode, "fullPath" | "relativePath">>;
