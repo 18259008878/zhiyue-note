@@ -67,8 +67,11 @@ ipcMain.on("write-note", (_, fileNodeJson: string) => {
     fs.writeFileSync(filePath, fileNode.content!, 'utf8');
 });
 
-ipcMain.on("create-category", (_, path: string) => {
-    fs.mkdirSync(path, { recursive: true });
+ipcMain.on("create-category", (_, args: any) => {
+    const { dirPath, rootPath } = args;
+    console.log(dirPath, rootPath);
+    if (rootPath as boolean == true) fs.mkdirSync(path.join(notesDir, dirPath), { recursive: true });
+    else fs.mkdirSync(dirPath, { recursive: true });
 });
 
 ipcMain.on("rename-note", (_, args: any) => {

@@ -1,9 +1,15 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useNoteStore } from '../stores';
 import path from 'path-browserify-win32';
+import Prompt from './Prompt.vue';
 import 'highlight.js/styles/github.css';
 
 const noteStore = useNoteStore();
+
+const showPrompt = ref(false);
+const promptResolver = ref<((value: string) => void) | null>(null);
+const promptRejecter = ref<((reason?: any) => void) | null>(null);
 
 function saveNote(): void {
     console.log(noteStore.currentNote);
@@ -32,11 +38,48 @@ function createNote(): void {
     noteStore.setCurrentNote();
 }
 
-//     markdown.value = marked(newContent, { renderer }) as string;
-// });
+function handleConfirm(value: string) {
+    promptResolver.value?.(value);
+    showPrompt.value = false;
+}
+
+function handleClose() {
+    promptRejecter.value?.("User closed the prompt");
+    showPrompt.value = false;
+}
+
+function handlePrompt() {
+    return new Promise<string>((resolve, reject) => {
+        promptResolver.value = resolve;
+        promptRejecter.value = reject;
+    });
+}
+
+async function createCatagory() {
+    showPrompt.value = true;
+    try {
+        let response = await handlePrompt();
+        response = response.trim();
+        if (response == "") return;
+        window.api.createCategory(response, true);
+        noteStore.fetchNoteList();
+    } catch (error) {
+        console.error(error);
+    }
+}
+
 </script>
 
 <template>
+    <Teleport to="body">
+        <Prompt
+            :show="showPrompt"
+            @confirm="handleConfirm"
+            @close="handleClose"
+        >
+            请输入标题
+        </Prompt>
+    </Teleport>
     <div id="editor—wrapper">
         <div id="toolbar-container">
             <button @click="saveNote" class="toolbar-button">
@@ -44,6 +87,9 @@ function createNote(): void {
             </button>
             <button @click="createNote" class="toolbar-button">
                 <i class="fa-solid fa-plus"></i>
+            </button>
+            <button @click="createCatagory" class="toolbar-button">
+                <i class="fa-solid fa-folder-plus"></i>
             </button>
         </div>
         <div id="editor-container">
