@@ -6,7 +6,7 @@
   },
   "description": "一个基于Electron和Vue3的markdown简单笔记应用",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
