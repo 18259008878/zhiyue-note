@@ -67,6 +67,10 @@ ipcMain.on("write-note", (_, fileNodeJson: string) => {
     fs.writeFileSync(filePath, fileNode.content!, 'utf8');
 });
 
+ipcMain.on("create-category", (_, path: string) => {
+    fs.mkdirSync(path, { recursive: true });
+});
+
 ipcMain.on("rename-note", (_, args: any) => {
     const { oldPath, newPath } = args;
     if (!existsSync(oldPath)) return; // 文件不存在

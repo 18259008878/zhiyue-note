@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+import Prompt from './Prompt.vue';
 import path from 'path-browserify-win32';
 import { useNoteStore } from '../stores';
 import type { FileNode, Note } from '../types';
@@ -8,6 +10,10 @@ defineProps<{
 }>();
 
 const noteStore = useNoteStore();
+
+const showPrompt = ref(false);
+const promptResolver = ref<((value: string) => void) | null>(null);
+const promptRejecter = ref<((reason?: any) => void) | null>(null);
 
 function handleOpenNote(note: FileNode): void {
     noteStore.setCurrentNote(note);
@@ -30,8 +36,41 @@ function handleCreateNote(note: FileNode): void {
     noteStore.setCurrentNote(newNote);
 }
 
-function handleCreateDirectory(note: FileNode): void {
+function handleConfirm(value: string) {
+    promptResolver.value?.(value);
+    showPrompt.value = false;
+}
 
+function handleClose() {
+    promptRejecter.value?.("User closed the prompt");
+    showPrompt.value = false;
+}
+
+function handlePrompt() {
+    return new Promise<string>((resolve, reject) => {
+        promptResolver.value = resolve;
+        promptRejecter.value = reject;
+    });
+}
+
+async function handleCreateDirectory(note: FileNode) {
+    showPrompt.value = true;
+    try {
+        let response = await handlePrompt();
+        response = response.trim();
+        if (response == "") return;
+        const isWindows = window.navigator.userAgent.indexOf('Windows') !== -1;
+        let fullPath: string;
+        if (isWindows) {
+            fullPath = path.win32.join(note.fullPath, response);
+        } else {
+            fullPath = path.join(note.fullPath, response);
+        }
+        window.api.createCategory(fullPath);
+        noteStore.fetchNoteList();
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 function recycleNote(note: FileNode): void {
@@ -56,6 +95,15 @@ function deleteNote(note: FileNode): void {
 </script>
 
 <template>
+    <Teleport to="body">
+        <Prompt
+            :show="showPrompt"
+            @confirm="handleConfirm"
+            @close="handleClose"
+        >
+            请输入标题
+        </Prompt>
+    </Teleport>
     <div>
         <div v-for="item in items">
             <div v-if="item.type === 'directory'" class="directory">

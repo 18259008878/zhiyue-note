@@ -4,6 +4,9 @@ contextBridge.exposeInMainWorld("api", {
     writeNote: (fileNodeJson: string) => {
         ipcRenderer.send("write-note", fileNodeJson);
     },
+    createCategory: (path: string) => {
+        ipcRenderer.send("create-category", path);
+    },
     renameNote: (oldPath: string, newPath: string) => {
         ipcRenderer.send("rename-note", { oldPath, newPath });
     },
